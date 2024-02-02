@@ -21,7 +21,20 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
 		)
 	}
 
-	fun toggleTodo(id: Long) {
-		_todoList.value = _todoList.value?.map { todo -> if (todo.id == id) todo.copy(isDone = !todo.isDone) else todo }
+	fun updateIsDone(id: Long, isDone: Boolean) {
+		_todoList.value = _todoList.value?.map { todo -> if (todo.id == id) todo.copy(isDone = isDone) else todo }
+	}
+
+	fun updateTodoContent(id: Long, title: String, desc: String) {
+		_todoList.value = _todoList.value?.map { todo ->
+			if (todo.id == id) todo.copy(
+				title = title,
+				desc = desc
+			) else todo
+		}
+	}
+
+	fun deleteTodoContent(id: Long) {
+		_todoList.value = _todoList.value?.filter { it.id != id }
 	}
 }

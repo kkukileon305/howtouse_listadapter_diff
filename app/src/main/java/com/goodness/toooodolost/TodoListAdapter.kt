@@ -5,22 +5,31 @@ import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.goodness.toooodolost.databinding.TodoItemBinding
 
-class TodoListAdapter(private val context: Activity) :
+class TodoListAdapter(
+	private val context: Activity,
+	private val todoViewModel: TodoViewModel,
+	private val updateTodoActivityResultLauncher: ActivityResultLauncher<Intent>? = null
+) :
 	ListAdapter<Todo, TodoListAdapter.TodoHolder>(TodoDiffCallback()) {
 	inner class TodoHolder(private val binding: TodoItemBinding) : RecyclerView.ViewHolder(binding.root) {
 		fun bind(data: Todo) {
 			binding.tvTitle.text = data.title
-			binding.tvId.text = data.id.toString()
+			binding.swIsDone.isChecked = data.isDone
+			binding.tvDesc.text = data.desc
 
-			binding.root.setOnClickListener {
-				val intent = Intent(context, DetailActivity::class.java)
+			binding.tvTitle.setOnClickListener {
+				updateTodoActivityResultLauncher?.launch(Intent(context, DetailActivity::class.java).apply {
+					putExtra(DetailActivity.ID, data)
+				})
+			}
 
-				intent.putExtra(DetailActivity.ID, data)
-				context.startActivity(intent)
+			binding.swIsDone.setOnClickListener {
+				todoViewModel.updateIsDone(data.id, !data.isDone)
 			}
 		}
 	}
