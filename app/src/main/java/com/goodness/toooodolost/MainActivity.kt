@@ -1,8 +1,12 @@
 package com.goodness.toooodolost
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.goodness.toooodolost.databinding.ActivityMainBinding
@@ -12,6 +16,19 @@ class MainActivity : AppCompatActivity() {
 	private val adapter by lazy { TodoListAdapter(this) }
 
 	private val viewModel by lazy { ViewModelProvider(this)[TodoViewModel::class.java] }
+
+	private val addTodoActivityResultLauncher =
+		registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+			if (result.resultCode == RESULT_OK) {
+				val data: Intent? = result.data
+				val title = data?.getStringExtra("title")
+				val desc = data?.getStringExtra("desc")
+
+				if (!title.isNullOrEmpty() && !desc.isNullOrEmpty()) {
+					viewModel.addTodo(title, desc)
+				}
+			}
+		}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -37,20 +54,7 @@ class MainActivity : AppCompatActivity() {
 
 	private fun initHandler() {
 		binding.btnAddTodo.setOnClickListener {
-			val etTitle = binding.etTitle
-			val etDesc = binding.etDesc
-
-			val title = etTitle.text.toString()
-			val desc = etDesc.text.toString()
-
-			if (title.isNotEmpty() && desc.isNotEmpty()) {
-				viewModel.addTodo(title, desc)
-			} else {
-				Toast.makeText(this@MainActivity, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
-			}
-
-			etTitle.setText("")
-			etDesc.setText("")
+			addTodoActivityResultLauncher.launch(Intent(this, AddTodo::class.java))
 		}
 	}
 }
